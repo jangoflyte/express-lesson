@@ -31,13 +31,32 @@ const movies = [
 
 app.get('/movies', (req, res) => {
     let {runtime} = req.query;
+    if (runtime !== undefined) {
+        console.log(`This the runtime: ${runtime}`);
+        let myMovie = movies.filter(movie => {
+            console.log(movie.runtime, parseInt(runtime));
+            console.log(movie)
+            return movie.runtime === parseInt(runtime)
+            // if (movie.runtime > 90) {
+            //     myMovie.push(movie)
+            // } else {
+            //     myMovie.push(movie);
+            // }
+            
+        });
+        console.log(myMovie)
+        res.status(200).send(myMovie);
+    } else {
+        res.status(200).send(movies);
+    }
     
-    res.status(200).send(movies)
 });
 
 
 app.post('/movies', (req, res) => {
-    console.log(req.body) // Access the body of the request - known as the payload
+    let myMovie = req.body;
+    console.log(myMovie) // Access the body of the request - known as the payload
+    
     const {title, runtime, release_year, director} = req.body;
     const newMovie = ({
         id: movies.length + 1,
@@ -68,23 +87,23 @@ app.patch('/movies', (req, res) => {
     
 });
 
-app.put('/movies', (req, res) => {
-    let foundFlag = false;
-    let foundMovie = {};
-    movies.forEach(movie => {
-        if (movie.id === req.body.id) {
-            foundFlag = true;
-            movie.title = req.body.title
-            movie.runtime = req.body.runtime
-            movie.release_year = req.body.release_year
-            movie.director = req.body.director
-            foundMovie = movie;
-        }
+app.put('/movies/:movieId', (req, res) => {
+    var { movieId } = req.params;
+    console.log(`This is the current id ${movieId}`);
+
+    let movieIndex = movies.findIndex(index => {
+        return index.id === parseInt(movieId);
     })
-    if (foundFlag) {
-        res.status(200).send(foundMovie)
+
+    if (movieIndex < 0) {
+        res.status(404).send(`Movie ID ${movieId} not in library`)
     } else {
-        res.status(404).send("Movie updated.")
+        let myMovie = req.body;
+        movies[movieIndex].title = myMovie.title
+        movies[movieIndex].runtime = myMovie.runtime;
+        movies[movieIndex].release_year = myMovie.release_year;
+        movies[movieIndex].director = myMovie.director;
+        res.status(204).send(`${movies[movieIndex]} added to library`)
     }
 });
 
